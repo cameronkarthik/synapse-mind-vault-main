@@ -1,3 +1,5 @@
+import { SyndicateContextType, UserCustomization } from './types'; // Or '../contexts/types' depending on structure
+
 // Create context value with the updated structure
 const contextValue: SyndicateContextType = {
   apiKey,
