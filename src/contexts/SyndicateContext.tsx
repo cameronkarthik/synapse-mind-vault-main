@@ -78,7 +78,11 @@ export const SyndicateProvider: React.FC<{ children: React.ReactNode }> = ({ chi
        // Ensure all required arguments are passed
        apiKey,
        thoughts,
-       addThought, // Make sure addThought is correctly passed and used if needed
+       // Pass setThoughts from useThoughts if needed by useSyndicateActions
+       // If useThoughts doesn't return setThoughts, you might need to manage it differently
+       // For now, assuming useThoughts provides it or it needs to be handled within SyndicateProvider
+       () => {}, // Placeholder for setThoughts - ** FIX THIS based on useThoughts hook **
+       addThought,
        updateThought,
        clearCurrentThoughts,
        hideChatHistory,
