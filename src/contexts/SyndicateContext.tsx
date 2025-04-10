@@ -1,0 +1,26 @@
+// Create context value with the updated structure
+const contextValue: SyndicateContextType = {
+  apiKey,
+  setApiKey,
+  thoughts,
+  allThoughts,
+  addThought,
+  updateThought,
+  isProcessing,
+  commandHistory,
+  historyIndex,
+  setHistoryIndex,
+  handleInput,
+  processCommand,
+  searchThoughts,
+  getRecentThoughts,
+  userProfile,
+  updateUserProfile,
+  hideChatHistory,
+  setHideChatHistory,
+  clearChatHistory,
+  logout,
+  customization,
+  updateCustomization,
+  syndicateDB
+}; 
