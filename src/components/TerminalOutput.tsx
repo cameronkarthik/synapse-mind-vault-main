@@ -84,73 +84,71 @@ const MemoizedThoughtsList = memo(ThoughtsList);
 const MemoizedHomeIntro = memo(HomeIntro);
 
 const TerminalOutput: React.FC = () => {
-  const { thoughts, allThoughts, hideChatHistory, isProcessing } = useSyndicate();
-  const scrollAreaRef = useRef<HTMLDivElement>(null); // Ref for the scroll viewport
+  const { thoughts, isProcessing, hideChatHistory } = useSyndicate();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
-  const [isAtBottom, setIsAtBottom] = useState(true);
-
-  const recentThoughts = thoughts.slice(-20); // Display limited thoughts for performance
-  const displayThoughts = hideChatHistory ? [] : recentThoughts;
-  const showWelcome = displayThoughts.length === 0 && !isProcessing;
-
-  // Scroll to bottom effect
-  useEffect(() => {
-    if (isAtBottom) {
-      const viewport = scrollAreaRef.current;
-      if (viewport) {
-        // Use setTimeout to allow DOM to update before scrolling
-        setTimeout(() => {
-            viewport.scrollTop = viewport.scrollHeight;
-        }, 0);
-      }
-    }
-  }, [displayThoughts, isProcessing, isAtBottom]); // Trigger scroll on new thoughts/processing change if user is at bottom
-
-  // Handle scroll events to show/hide button and track position
-  const handleScroll = useCallback(() => {
-    const viewport = scrollAreaRef.current;
-    if (viewport) {
-      const isScrolledToBottom = viewport.scrollHeight - viewport.scrollTop <= viewport.clientHeight + 50; // Allow some tolerance
-      const isScrollable = viewport.scrollHeight > viewport.clientHeight;
-
-      setShowScrollButton(isScrollable && !isScrolledToBottom);
-      setIsAtBottom(isScrolledToBottom);
-    }
-  }, []);
-
-  // Function to manually scroll to bottom
-  const scrollToBottom = () => {
-    const viewport = scrollAreaRef.current;
-    if (viewport) {
-      viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'smooth' });
-    }
-    setIsAtBottom(true); // Assume we are at bottom after clicking
+  
+  // Filter recent thoughts - only show the last 10 if we have a lot
+  const allThoughts = thoughts || [];
+  const recentThoughts = allThoughts.slice(-10);
+  
+  // Handle scrolling
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!scrollAreaRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setShowScrollButton(!isNearBottom);
   };
-
-
+  
+  // Scroll to bottom automatically on new thoughts or when processing starts
+  useEffect(() => {
+    if (scrollAreaRef.current && (!showScrollButton || isProcessing)) {
+      scrollAreaRef.current.scrollTo({
+        top: scrollAreaRef.current.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [thoughts, isProcessing, showScrollButton]);
+  
+  // Modify the rendering of thoughts to use the new FormattedText component
   return (
-    // Use the viewport prop of ScrollArea for the ref
-    <ScrollArea className="flex-1 bg-zinc-900 relative" viewportRef={scrollAreaRef} onScroll={handleScroll}>
-      <div className="p-4 terminal-text min-h-full flex flex-col">
-        <div className="flex-grow"> {/* This div takes up space to push history down */}
-            {showWelcome ? (
-                <MemoizedHomeIntro />
-            ) : (
-                <>
-                  {/* Pass FormattedText component correctly */}
-                  <MemoizedThoughtsList thoughts={displayThoughts} FormattedTextComponent={FormattedText} />
-                  {isProcessing && <ThinkingIndicator />}
-                </>
-            )}
-        </div>
-        {/* History Collapsible at the bottom */}
-        {!hideChatHistory && allThoughts.length > recentThoughts.length && (
-             {/* Pass FormattedText component correctly */}
-            <HistoryCollapsible allThoughts={allThoughts} recentCount={recentThoughts.length} FormattedTextComponent={FormattedText} />
-        )}
-      </div>
-      <ScrollBar orientation="vertical" />
-       {showScrollButton && <ScrollToBottomButton onClick={scrollToBottom} />}
+    <ScrollArea 
+      className="p-4 bg-syndicate-dark bg-opacity-95 text-white h-full terminal-text relative"
+      onScrollCapture={handleScroll}
+      ref={scrollAreaRef}
+    >
+      {allThoughts.length === 0 ? (
+        <MemoizedHomeIntro />
+      ) : (
+        <>
+          <MemoizedThoughtsList 
+            thoughts={recentThoughts} 
+            FormattedTextComponent={FormattedText} 
+          />
+          
+          {isProcessing && <ThinkingIndicator />}
+        </>
+      )}
+      
+      {!hideChatHistory && allThoughts.length > recentThoughts.length && (
+        /* Pass FormattedText component correctly */
+        <HistoryCollapsible allThoughts={allThoughts} recentCount={recentThoughts.length} FormattedTextComponent={FormattedText} />
+      )}
+      
+      {showScrollButton && !isProcessing && (
+        <ScrollToBottomButton 
+          onClick={() => {
+            if (scrollAreaRef.current) {
+              scrollAreaRef.current.scrollTo({
+                top: scrollAreaRef.current.scrollHeight,
+                behavior: 'smooth'
+              });
+              setShowScrollButton(false);
+            }
+          }}
+        />
+      )}
     </ScrollArea>
   );
 };
