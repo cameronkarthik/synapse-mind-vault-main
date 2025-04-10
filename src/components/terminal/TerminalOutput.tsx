@@ -2,79 +2,74 @@ import React, { useRef, useEffect, memo, useState } from 'react';
 import { useSyndicate } from '@/contexts/SynapseContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Thought } from '@/contexts/types';
+import ThoughtsList from './ThoughtsList';
+import HomeIntro from '../HomeIntro';
+import ThinkingIndicator from './ThinkingIndicator';
+import HistoryCollapsible from './HistoryCollapsible';
+import ScrollToBottomButton from './ScrollToBottomButton';
+import { FormattedText } from './FormattedOutput';
 
-// Simplified Text Formatter Component
-const FormattedText = memo(({ text }: { text: string }) => {
-  return (
-    <div className="whitespace-pre-wrap">
-      {text}
-    </div>
-  );
-});
+// Use memo to prevent unnecessary renders
+const MemoizedThoughtsList = memo(ThoughtsList);
+const MemoizedHomeIntro = memo(HomeIntro);
 
-// Simplified Terminal Output Component - fully self-contained
 const TerminalOutput: React.FC = () => {
-  const { thoughts, isProcessing } = useSyndicate();
+  const { thoughts, isProcessing, hideChatHistory } = useSyndicate();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
   
-  // Filter recent thoughts
+  // Filter recent thoughts - only show the last 10 if we have a lot
   const allThoughts = thoughts || [];
   const recentThoughts = allThoughts.slice(-10);
   
   // Handle scrolling
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     if (!scrollAreaRef.current) return;
+    
     const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
     const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
     setShowScrollButton(!isNearBottom);
   };
   
-  // Scroll to bottom automatically
+  // Scroll to bottom automatically on new thoughts or when processing starts
   useEffect(() => {
-    if (scrollAreaRef.current) {
+    if (scrollAreaRef.current && (!showScrollButton || isProcessing)) {
       scrollAreaRef.current.scrollTo({
         top: scrollAreaRef.current.scrollHeight,
         behavior: 'smooth'
       });
     }
-  }, [thoughts, isProcessing]);
+  }, [thoughts, isProcessing, showScrollButton]);
   
   return (
     <ScrollArea 
-      className="p-4 bg-zinc-900 text-white h-full relative"
+      className="p-4 bg-syndicate-dark bg-opacity-95 text-white h-full terminal-text relative"
       onScrollCapture={handleScroll}
       ref={scrollAreaRef}
     >
       {allThoughts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center h-full">
-          <h1 className="text-2xl font-bold">Welcome to Syndicate Mind</h1>
-          <p className="text-zinc-400">Start typing to save your thoughts</p>
-        </div>
+        <MemoizedHomeIntro />
       ) : (
-        <div className="space-y-4">
-          {recentThoughts.map((thought) => (
-            <div key={thought.id} className="p-2 border border-zinc-800 rounded">
-              <FormattedText text={thought.input} />
-              {thought.output && (
-                <div className="mt-2 p-2 bg-zinc-800 rounded">
-                  <FormattedText text={thought.output} />
-                </div>
-              )}
-            </div>
-          ))}
+        <>
+          <MemoizedThoughtsList 
+            thoughts={recentThoughts} 
+            FormattedTextComponent={FormattedText} 
+          />
           
-          {isProcessing && (
-            <div className="flex items-center space-x-2 text-zinc-400">
-              <div className="animate-pulse">Processing...</div>
-            </div>
-          )}
-        </div>
+          {isProcessing && <ThinkingIndicator />}
+        </>
       )}
       
-      {showScrollButton && (
-        <button
-          className="fixed bottom-4 right-4 bg-zinc-800 p-2 rounded-full shadow-lg"
+      {!hideChatHistory && allThoughts.length > recentThoughts.length && (
+        <HistoryCollapsible 
+          allThoughts={allThoughts} 
+          recentCount={recentThoughts.length} 
+          FormattedTextComponent={FormattedText} 
+        />
+      )}
+      
+      {showScrollButton && !isProcessing && (
+        <ScrollToBottomButton 
           onClick={() => {
             if (scrollAreaRef.current) {
               scrollAreaRef.current.scrollTo({
@@ -84,9 +79,7 @@ const TerminalOutput: React.FC = () => {
               setShowScrollButton(false);
             }
           }}
-        >
-          ↓
-        </button>
+        />
       )}
     </ScrollArea>
   );

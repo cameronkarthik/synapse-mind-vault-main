@@ -13,24 +13,32 @@ interface ThoughtItemProps {
     name: string;
     avatarUrl?: string | null;
   };
+  FormattedTextComponent?: React.ComponentType<{text: string}>;
 }
 
-const ThoughtItem: React.FC<ThoughtItemProps> = ({ thought, userProfile }) => {
+const ThoughtItem: React.FC<ThoughtItemProps> = ({ 
+  thought, 
+  userProfile, 
+  FormattedTextComponent 
+}) => {
   const date = new Date(thought.timestamp);
   const thoughtRef = useRef<HTMLDivElement>(null);
   const { customization } = useSyndicate();
   
-  console.log("ThoughtItem rendering:", { 
-    timestamp: thought.timestamp,
-    hasInput: !!thought.input,
-    hasOutput: !!thought.output,
-    inputLength: thought.input?.length || 0,
-    outputLength: thought.output?.length || 0,
-    displayTags: customization.displayTags
-  });
+  // Only log in development
+  if (process.env.NODE_ENV === 'development') {
+    console.log("ThoughtItem rendering:", { 
+      timestamp: thought.timestamp,
+      hasInput: !!thought.input,
+      hasOutput: !!thought.output,
+      inputLength: thought.input?.length || 0,
+      outputLength: thought.output?.length || 0,
+      displayTags: customization.displayTags
+    });
+  }
   
   useEffect(() => {
-    if (thoughtRef.current) {
+    if (thoughtRef.current && process.env.NODE_ENV === 'development') {
       console.log(`ThoughtItem mounted/updated: ${thought.input?.substring(0, 20)}`);
     }
   }, [thought]);
@@ -90,6 +98,8 @@ const ThoughtItem: React.FC<ThoughtItemProps> = ({ thought, userProfile }) => {
                   </TableBody>
                 </Table>
               </div>
+            ) : FormattedTextComponent ? (
+              <FormattedTextComponent text={thought.input} />
             ) : (
               thought.input
             )}
@@ -138,6 +148,7 @@ const ThoughtItem: React.FC<ThoughtItemProps> = ({ thought, userProfile }) => {
   );
 };
 
+// Memoize the component to prevent unnecessary re-renders
 export default memo(ThoughtItem, (prevProps, nextProps) => {
   // Compare the important properties to determine if re-render is needed
   const prevThought = prevProps.thought;

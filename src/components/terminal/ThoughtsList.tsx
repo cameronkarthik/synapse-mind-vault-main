@@ -1,13 +1,15 @@
 import React, { useEffect, useRef, useMemo, useCallback } from 'react';
 import { Thought } from '@/contexts/types';
 import ThoughtItem from './ThoughtItem';
+import { useSyndicate } from '@/contexts/SynapseContext';
 
 interface ThoughtsListProps {
   thoughts: Thought[];
-  userProfile: {
+  userProfile?: {
     name: string;
     avatarUrl?: string | null;
   };
+  FormattedTextComponent?: React.ComponentType<{text: string}>;
   itemsPerPage?: number;
   currentPage?: number;
   bottomUp?: boolean; // New prop to determine display order
@@ -18,13 +20,18 @@ interface ThoughtsListProps {
 const ThoughtsList: React.FC<ThoughtsListProps> = ({ 
   thoughts, 
   userProfile, 
+  FormattedTextComponent,
   itemsPerPage = 30, 
   currentPage = 1,
   bottomUp = false, // Default to top-down
   shouldAutoScroll = true,
   orderDescending = true,
 }) => {
+  const { userProfile: contextUserProfile } = useSyndicate();
   const listRef = useRef<HTMLDivElement>(null);
+
+  // Use context userProfile if none is provided directly
+  const effectiveUserProfile = userProfile || contextUserProfile || { name: 'User' };
 
   // Filter duplicate thoughts more efficiently with useMemo
   const filteredThoughts = useMemo(() => {
@@ -96,7 +103,8 @@ const ThoughtsList: React.FC<ThoughtsListProps> = ({
         <ThoughtItem 
           key={`thought-${thought.timestamp}-${index}`} 
           thought={thought} 
-          userProfile={userProfile}
+          userProfile={effectiveUserProfile}
+          FormattedTextComponent={FormattedTextComponent}
         />
       ))}
     </div>
