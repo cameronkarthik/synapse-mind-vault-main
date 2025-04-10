@@ -8,7 +8,6 @@ import ApiKeyDialog from "@/components/ApiKeyDialog";
 import ProfileSettings from "@/components/ProfileSettings";
 import CustomizationSettings from "@/components/CustomizationSettings";
 import Routes from "./Routes";
-import TerminalOutput from "@/components/terminal/TerminalOutput";
 
 const App = () => {
   // Create a new QueryClient instance inside the component
