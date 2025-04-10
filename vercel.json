@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/waitlist", "destination": "/api/waitlist.ts" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }
+      ]
+    }
+  ],
+  "env": {
+    "VERCEL_KV_URL": "@kv_url",
+    "VERCEL_KV_REST_API_TOKEN": "@kv_rest_api_token",
+    "VERCEL_KV_REST_API_URL": "@kv_rest_api_url",
+    "VERCEL_KV_REST_API_READ_ONLY_TOKEN": "@kv_rest_api_read_only_token"
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
+} 
