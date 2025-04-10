@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, memo } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useSyndicate } from '@/contexts/SynapseContext';
 import { extractChartData } from '@/lib/utils';
 import ContinuationSuggestions from './output/ContinuationSuggestions';
@@ -7,28 +7,13 @@ import TextFormatter from './output/TextFormatter';
 
 interface FormattedOutputProps {
   text: string;
-  thoughtId?: string;
-}
-
-interface FormattedTextProps {
-  text: string;
+  thoughtId?: string; // Add an optional thoughtId prop
 }
 
 // Helper function to check if the content is markdown
 const isMarkdown = (text: string): boolean => {
   return /^#|\n#|^\s*-|\n\s*-|\`.*\`|##/.test(text);
 };
-
-// A simpler version of FormattedOutput for use in lists
-export const FormattedText = memo(({ text }: FormattedTextProps) => {
-  if (!text) return null;
-  
-  if (isMarkdown(text)) {
-    return <TextFormatter text={text} />;
-  }
-  
-  return <div className="whitespace-pre-wrap">{text}</div>;
-});
 
 const FormattedOutput: React.FC<FormattedOutputProps> = ({ text, thoughtId }) => {
   const outputRef = useRef<HTMLDivElement>(null);
