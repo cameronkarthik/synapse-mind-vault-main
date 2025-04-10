@@ -70,6 +70,10 @@ const TerminalOutput: React.FC = () => {
       {/* <FormattedText text={thought.output} /> */}
       
       {/* ... rest of the component ... */}
+
+      {!hideChatHistory && allThoughts.length > recentThoughts.length && (
+        <HistoryCollapsible allThoughts={allThoughts} recentCount={recentThoughts.length} FormattedTextComponent={FormattedText} />
+      )}
     </ScrollArea>
   );
 };
