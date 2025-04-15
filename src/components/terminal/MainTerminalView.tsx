@@ -24,18 +24,22 @@ const MainTerminalView: React.FC = () => {
         const viewportHeight = window.innerHeight;
         // Using the golden ratio (1.618) for pleasing proportions
         // Terminal height is approximately 62% of the viewport height
+        //vijay - change .62 to .90 to 90% from 62%
         const idealTerminalHeight = Math.min(
-          Math.floor(viewportHeight * 0.62), 
+          Math.floor(viewportHeight * 0.90), 
           700 // Cap at 700px max height for larger screens
         );
         
         terminalRef.current.style.height = `${idealTerminalHeight}px`;
         
         // Center the terminal in the viewport
+        
         const terminalTop = Math.max(100, (viewportHeight - idealTerminalHeight) / 2 - 50);
+        /* commenting out the auto center adjustment on load - vijay
         if (terminalTop > 0) {
           terminalRef.current.style.marginTop = `${terminalTop}px`;
         }
+        */ //end comment auto centering - vijay
       }
     };
     
